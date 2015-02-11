@@ -29,12 +29,14 @@ public class HttpPayloadHandler implements HTTPSourceHandler {
     public List<Event> getEvents(HttpServletRequest request) throws Exception {
         BufferedReader reader = request.getReader();
         int contentLength = request.getContentLength();
-        char[] buffer = new char[contentLength];
-
-        reader.read(buffer);
-
         List<Event> eventList = new ArrayList<Event>(0);
-        eventList.add(EventBuilder.withBody(new String(buffer).getBytes()));
+
+        if (contentLength > 0) {
+            char[] buffer = new char[contentLength];
+
+            reader.read(buffer);
+            eventList.add(EventBuilder.withBody(new String(buffer).getBytes()));
+        }
 
         return eventList;
     }
