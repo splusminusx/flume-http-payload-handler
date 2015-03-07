@@ -27,6 +27,7 @@ public class HttpPayloadHandler implements HTTPSourceHandler {
      * @throws Exception
      */
     public List<Event> getEvents(HttpServletRequest request) throws Exception {
+        request.setCharacterEncoding("UTF-8");
         BufferedReader reader = request.getReader();
         int contentLength = request.getContentLength();
         List<Event> eventList = new ArrayList<Event>(0);
