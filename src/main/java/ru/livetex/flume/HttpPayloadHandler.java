@@ -1,6 +1,7 @@
 package ru.livetex.flume;
 
 import java.io.BufferedReader;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.flume.Context;
@@ -27,7 +28,12 @@ public class HttpPayloadHandler implements HTTPSourceHandler {
      * @throws Exception
      */
     public List<Event> getEvents(HttpServletRequest request) throws Exception {
-        request.setCharacterEncoding("UTF-8");
+        String charset = request.getCharacterEncoding();
+        if (charset == null) {
+            charset = "UTF-8";
+        } else if (!(charset.equalsIgnoreCase("utf-8"))) {
+            throw new UnsupportedCharsetException("HTTP payload handler supports UTF-8 only");
+        }
         BufferedReader reader = request.getReader();
         int contentLength = request.getContentLength();
         List<Event> eventList = new ArrayList<Event>(0);
@@ -36,7 +42,7 @@ public class HttpPayloadHandler implements HTTPSourceHandler {
             char[] buffer = new char[contentLength];
 
             reader.read(buffer);
-            eventList.add(EventBuilder.withBody(new String(buffer).getBytes()));
+            eventList.add(EventBuilder.withBody(new String(buffer).getBytes(charset)));
         }
 
         return eventList;
