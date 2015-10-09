@@ -26,11 +26,11 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Обработчик тела HTTP запроса.
  */
-public class HttpPayloadHandler implements HTTPSourceHandler {
+public abstract class HttpPayloadHandler implements HTTPSourceHandler {
 
     private static final String METHOD_KEY = "method";
     private static final String UNKNOWN = "unknown";
-    private static final TProtocolFactory protocolFactory = new TJSONProtocol.Factory();
+    protected abstract TProtocolFactory getTProtocolFactory();
 
     @Override
     public void configure(Context context) {
@@ -89,7 +89,7 @@ public class HttpPayloadHandler implements HTTPSourceHandler {
      */
     private String extractMethodName(byte[] payload) throws TException {
         TTransport transport = new TMemoryInputTransport(payload);
-        TProtocol protocol = protocolFactory.getProtocol(transport);
+        TProtocol protocol = getTProtocolFactory().getProtocol(transport);
         return protocol.readMessageBegin().name;
     }
 }

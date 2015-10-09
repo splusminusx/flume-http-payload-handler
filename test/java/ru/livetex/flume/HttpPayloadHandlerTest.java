@@ -16,7 +16,7 @@ public class HttpPayloadHandlerTest {
 
     @Test
     public void testOkMessage() throws Exception {
-        HttpPayloadHandler handler = new HttpPayloadHandler();
+        HttpPayloadHandler handler = new JsonHttpPayloadHandler();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setContent(okMessage);
         List<Event> events = handler.getEvents(request);
@@ -30,7 +30,7 @@ public class HttpPayloadHandlerTest {
 
     @Test
     public void testBadMessage() throws Exception {
-        HttpPayloadHandler handler = new HttpPayloadHandler();
+        HttpPayloadHandler handler = new JsonHttpPayloadHandler();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setContent(badMessage);
         List<Event> events = handler.getEvents(request);
