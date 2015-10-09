@@ -1,6 +1,7 @@
 package ru.livetex.flume;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +12,14 @@ import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.event.EventBuilder;
 import org.apache.flume.source.http.HTTPSourceHandler;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TMemoryInputTransport;
+import org.apache.thrift.transport.TTransport;
+
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 
@@ -19,9 +28,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class HttpPayloadHandler implements HTTPSourceHandler {
 
-    private static final String SERVICE_KEY = "service";
     private static final String METHOD_KEY = "method";
     private static final String UNKNOWN = "unknown";
+    private static final TProtocolFactory protocolFactory = new TJSONProtocol.Factory();
 
     @Override
     public void configure(Context context) {
@@ -35,46 +44,52 @@ public class HttpPayloadHandler implements HTTPSourceHandler {
      * @throws Exception
      */
     public List<Event> getEvents(HttpServletRequest request) throws Exception {
-        String charset = request.getCharacterEncoding();
-        if (charset == null) {
-            charset = "UTF-8";
-        } else if (!(charset.equalsIgnoreCase("utf-8"))) {
-            throw new UnsupportedCharsetException("HTTP payload handler supports UTF-8 only");
-        }
-        BufferedReader reader = request.getReader();
-        int contentLength = request.getContentLength();
         List<Event> eventList = new ArrayList<Event>(0);
-
+        int contentLength = request.getContentLength();
         if (contentLength > 0) {
-            char[] buffer = new char[contentLength];
-            Map<String, String> headers = extractHeaders(request);
-            reader.read(buffer);
-            eventList.add(EventBuilder.withBody(new String(buffer).getBytes(charset), headers));
+            byte[] payload = extractPayload(request);
+            Map<String, String> headers = extractHeaders(payload);
+            eventList.add(EventBuilder.withBody(payload, headers));
         }
 
         return eventList;
     }
 
+    private byte[] extractPayload(HttpServletRequest request) throws IOException {
+        ServletInputStream inputStream = request.getInputStream();
+        byte[] buffer = new byte[request.getContentLength()];
+        inputStream.read(buffer);
+        return buffer;
+    }
+
     /**
      * Извлечение из запроса хедеров для события.
      *
-     * @param request - запрос.
+     * @param payload - запрос.
      * @return - хедеры для события.
      */
-    private Map<String, String> extractHeaders(HttpServletRequest request) {
+    private Map<String, String> extractHeaders(byte[] payload) {
         Map<String, String> headers = new HashMap<String, String>();
 
-        String service = request.getParameter(SERVICE_KEY);
-        if (service == null) {
-            service = UNKNOWN;
+        String methodName = UNKNOWN;
+        try {
+            methodName = extractMethodName(payload);
+        } catch (TException e) {
+            e.printStackTrace();
         }
-        headers.put(SERVICE_KEY, service);
-
-        String method = request.getParameter(METHOD_KEY);
-        if (method == null) {
-            method = UNKNOWN;
-        }
-        headers.put(METHOD_KEY, method);
+        headers.put(METHOD_KEY, methodName);
         return headers;
+    }
+
+    /**
+     * Извлечение названия thrift-метода из сообщения.
+     * @param payload - запрос.
+     * @return - название thrift-метода.
+     * @throws TException
+     */
+    private String extractMethodName(byte[] payload) throws TException {
+        TTransport transport = new TMemoryInputTransport(payload);
+        TProtocol protocol = protocolFactory.getProtocol(transport);
+        return protocol.readMessageBegin().name;
     }
 }
