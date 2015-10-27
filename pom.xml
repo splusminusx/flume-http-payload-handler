@@ -6,7 +6,7 @@
 
     <groupId>livetex</groupId>
     <artifactId>flume-http-payload-handler</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>1.0.8-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
