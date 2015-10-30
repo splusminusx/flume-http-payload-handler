@@ -17,7 +17,7 @@ public class BinaryThriftMethodInterceptor extends ThriftMethodInterceptor {
         }
     }
 
-    private static final TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
+    private static final TProtocolFactory protocolFactory = new TBinaryProtocol.Factory(true, true);
 
     @Override
     protected TProtocolFactory getTProtocolFactory() {
