@@ -48,10 +48,20 @@ public abstract class ThriftMethodInterceptor implements Interceptor {
         TTransport transport = new TMemoryInputTransport(payload);
         TProtocol protocol = getTProtocolFactory().getProtocol(transport);
         try {
-            return protocol.readMessageBegin().name;
+            return cleanMethodName(protocol.readMessageBegin().name);
         } catch (TException e) {
             e.printStackTrace();
             return UNKNOWN;
         }
+    }
+
+    /**
+     * Очистить имя метода от невалидных символово
+     * Допустимы только символы латиницей и цифры
+     * @param methodName Имя метода для очистки
+     * @return Очищенное от невалидных символов имя метода
+     */
+    private String cleanMethodName(String methodName) {
+        return methodName.replaceAll("[^a-zA-Z0-9]", "");
     }
 }
