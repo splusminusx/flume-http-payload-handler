@@ -56,9 +56,8 @@ public abstract class ThriftMethodInterceptor implements Interceptor {
         TProtocol protocol = getTProtocolFactory().getProtocol(transport);
         try {
             String methodName = protocol.readMessageBegin().name;
-            String cleanedMethodName = cleanMethodName(methodName);
 
-            if (methodName.length() == cleanedMethodName.length()) {
+            if (isValidMethodName(methodName)) {
                 return methodName;
             } else {
                 return INVALID_NAME;
@@ -75,7 +74,7 @@ public abstract class ThriftMethodInterceptor implements Interceptor {
      * @param methodName Имя метода для очистки
      * @return Очищенное от невалидных символов имя метода
      */
-    private String cleanMethodName(String methodName) {
-        return methodName.replaceAll("[^a-zA-Z0-9]", "");
+    private boolean isValidMethodName(String methodName) {
+        return methodName.matches("[a-zA-Z0-9]+");
     }
 }
