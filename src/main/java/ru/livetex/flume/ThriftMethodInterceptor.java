@@ -13,7 +13,14 @@ import java.util.List;
 
 public abstract class ThriftMethodInterceptor implements Interceptor {
     private static final String METHOD_KEY = "method";
-    private static final String UNKNOWN = "unknown";
+    /**
+     * Имя метода, когда невозможно распарсить thrift сообщение
+     */
+    private static final String UNKNOWN_NAME = "unknown";
+    /**
+     * Имя метода, когда thrift сообщение было распаршено, но имя содержит невалидные символы
+     */
+    private static final String INVALID_NAME = "wrong";
 
     protected abstract TProtocolFactory getTProtocolFactory();
 
@@ -48,10 +55,17 @@ public abstract class ThriftMethodInterceptor implements Interceptor {
         TTransport transport = new TMemoryInputTransport(payload);
         TProtocol protocol = getTProtocolFactory().getProtocol(transport);
         try {
-            return cleanMethodName(protocol.readMessageBegin().name);
+            String methodName = protocol.readMessageBegin().name;
+            String cleanedMethodName = cleanMethodName(methodName);
+
+            if (methodName.length() == cleanedMethodName.length()) {
+                return methodName;
+            } else {
+                return INVALID_NAME;
+            }
         } catch (TException e) {
             e.printStackTrace();
-            return UNKNOWN;
+            return UNKNOWN_NAME;
         }
     }
 
