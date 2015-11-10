@@ -20,7 +20,7 @@ public abstract class ThriftMethodInterceptor implements Interceptor {
     /**
      * Имя метода, когда thrift сообщение было распаршено, но имя содержит невалидные символы
      */
-    private static final String INVALID_NAME = "wrong";
+    private static final String INVALID_NAME = "invalid";
 
     protected abstract TProtocolFactory getTProtocolFactory();
 
