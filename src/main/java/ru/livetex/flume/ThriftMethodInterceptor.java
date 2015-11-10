@@ -9,6 +9,7 @@ import org.apache.thrift.transport.TMemoryInputTransport;
 import org.apache.thrift.transport.TTransport;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 
 public abstract class ThriftMethodInterceptor implements Interceptor {
@@ -21,6 +22,7 @@ public abstract class ThriftMethodInterceptor implements Interceptor {
      * Имя метода, когда thrift сообщение было распаршено, но имя содержит невалидные символы
      */
     private static final String INVALID_NAME = "invalid";
+    private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9]+");
 
     protected abstract TProtocolFactory getTProtocolFactory();
 
@@ -74,6 +76,6 @@ public abstract class ThriftMethodInterceptor implements Interceptor {
      * @return Очищенное от невалидных символов имя метода
      */
     private boolean isValidMethodName(String methodName) {
-        return methodName.matches("[a-zA-Z0-9]+");
+        return VALID_NAME_PATTERN.matcher(methodName).matches();
     }
 }
