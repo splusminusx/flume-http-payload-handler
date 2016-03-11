@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class HttpPayloadHandler implements HTTPSourceHandler {
 
-    @Override
     public void configure(Context context) {
     }
 

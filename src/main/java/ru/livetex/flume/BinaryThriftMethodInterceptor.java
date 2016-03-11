@@ -7,12 +7,10 @@ import org.apache.thrift.protocol.TProtocolFactory;
 
 public class BinaryThriftMethodInterceptor extends ThriftMethodInterceptor {
     public static class Builder implements Interceptor.Builder {
-        @Override
         public Interceptor build() {
             return new BinaryThriftMethodInterceptor();
         }
 
-        @Override
         public void configure(Context context) {
         }
     }
